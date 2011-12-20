@@ -1,0 +1,27 @@
+#{extends 'main.html' /}
+
+#{set title:'Home' /}
+
+<script>
+
+Pusher.host = "localhost";
+Pusher.ws_port = 9000;
+
+$(document).ready(function() {
+	var pusher = new Pusher('foo'); // Replace with your app key
+	
+	pusher.bind('pusher:subscription_succeeded', function(data) {
+	    thingChannel.trigger('alert', {'foo': 'bar'});
+	});
+	
+	var thingChannel = pusher.subscribe('thing-channel');
+	
+	thingChannel.bind('alert', function(data) {
+	    alert('got an alert!');
+	});
+});
+
+</script>
+
+<div id="container"></div>
+Foo

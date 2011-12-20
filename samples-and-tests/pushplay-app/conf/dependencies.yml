@@ -1,0 +1,12 @@
+# Application dependencies
+
+require:
+    - play
+    - pushplay 0.1
+    
+repositories:
+     - localRepo:
+         type: local
+         artifact: ${application.path}/../../../[module]
+         contains:
+             - pushplay
