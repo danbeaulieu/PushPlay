@@ -1,0 +1,15 @@
+# playframework
+tmp
+test-result
+out
+logs
+server.pid
+*.ser
+deploy/*.jar
+*.pyc
+.DS_Store
+.project
+.settings
+.classpath
+/eclipse
+/dist

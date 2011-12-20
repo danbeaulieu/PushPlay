@@ -1,0 +1,10 @@
+# This file defines all module routes (Higher priority routes first)
+#
+# import these routes in the main app as :
+# *     /                       module:pushplay
+#
+# ~~~~
+WS      /app/{apiKey}                pushplay.PushPlayWebSocket.StreamSocket.app
+GET     /?                      Module.index
+
+POST    /apps/{appId}/channels/{channel}/events                  pushplay.PushPlayWebSocket.apps
