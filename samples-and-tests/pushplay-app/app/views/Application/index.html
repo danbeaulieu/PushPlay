@@ -4,24 +4,35 @@
 
 <script>
 
-Pusher.host = "localhost";
-Pusher.ws_port = 9000;
-
-$(document).ready(function() {
-	var pusher = new Pusher('foo'); // Replace with your app key
+	Pusher.host = "localhost"; // change to your host
+	Pusher.ws_port = 9000; // change to the port Play! is started on
 	
-	pusher.bind('pusher:subscription_succeeded', function(data) {
-	    thingChannel.trigger('alert', {'foo': 'bar'});
+	var thingChannel;
+	$(document).ready(function() {
+		var pusher = new Pusher('foo'); // Replace with your app key in application.conf
+		pusher.bind('pusher:subscription_succeeded', function(data) {
+		    updateContainer('subscribed!');
+		    thingChannel.trigger('client-talk', {'message': 'auto-message'});
+		});
+		
+		thingChannel = pusher.subscribe('private-messages');
+		
+		thingChannel.bind('client-talk', function(data) {
+		    updateContainer(data.message);
+		});
 	});
 	
-	var thingChannel = pusher.subscribe('thing-channel');
+	function updateContainer(msg) {
+	   $('#container').append('<div class="update">' + msg + '</div>');
+	}
 	
-	thingChannel.bind('alert', function(data) {
-	    alert('got an alert!');
-	});
-});
+	function triggerFromInput() {
+	   thingChannel.trigger('client-talk', {'message': $('#message').val()});
+	}
 
 </script>
 
+<h2>PushPlay!</h2>
+</br>
+<input type='text' id='message'></input> <input type="submit" onclick='javascript:triggerFromInput();' value="Send Message">
 <div id="container"></div>
-Foo

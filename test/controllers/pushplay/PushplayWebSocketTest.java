@@ -13,11 +13,9 @@ public class PushplayWebSocketTest {
 	@Test
 	public void testGson() {
 		String data = "{\"hit\":\"one\"}";
-		System.out.println("{\"channel\":\"foo\",\"event_name\":\"foo_update\",\"data\":" + data + "}");
-		System.out.println(new JsonParser().parse("{\"channel\":\"foo\",\"event_name\":\"foo_update\",\"data\":" + data + "}"));
-		Message incoming = new Gson().fromJson(new JsonParser().parse("{\"channel\":\"foo\",\"event_name\":\"foo_update\",\"data\":" + data + "}"), Message.class);
-		System.out.println(incoming.getChannel());
-		System.out.println(incoming.getData());
-		System.out.println(new Gson().toJson(incoming));
+		System.out.println(data);
+		String temp = "{\"channel\":\"foo\",\"event\":\"foo_update\",\"data\":" + data + "}";
+		System.out.println(temp);
+		System.out.println(new JsonParser().parse(temp).getAsJsonObject().get("data"));
 	}
 }

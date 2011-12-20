@@ -7,6 +7,7 @@ GET     /                                       Application.index
 
 *      /                module:pushplay
 
+POST   /pusher/auth                             Application.auth
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

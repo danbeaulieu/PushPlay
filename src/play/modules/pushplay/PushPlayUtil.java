@@ -15,12 +15,22 @@ import play.mvc.Http.Request;
 
 public class PushPlayUtil {
 
+	public static String authToken(String socket_id, String channel, String channel_data) {
+		
+		String string_to_sign = socket_id + ":" + channel;
+		
+		if (channel_data != null) {
+			string_to_sign = string_to_sign + ":" + channel_data;
+		}
+		return PushPlayUtil.sha256(string_to_sign, PushPlayPlugin.getSecret());
+	}
+	
 	public static boolean isRequestValid(Request request,
 			TriggerEventMessage tem) {
 		
 		String signature = "POST\n" + request.path + "\n" + tem.toString();
 		
-		return (tem.auth_signature.equals(sha256(signature, PushPlayPlugin.secret)));
+		return (tem.auth_signature.equals(sha256(signature, PushPlayPlugin.getSecret())));
 	}
 	
 	public static String sha256(String string, String secret) {

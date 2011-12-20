@@ -11,7 +11,7 @@ public class Message {
 	String event;
 	
 	Map<String, String> data;
-	
+
 	String socket_id;
 	
 	public Message() { }

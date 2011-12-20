@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 
 import play.Logger;
+import play.Play;
 import play.libs.F.Either;
 import play.libs.F.Promise;
 import play.modules.pushplay.Message;
@@ -58,30 +59,19 @@ public class PushPlayWebSocket extends Controller {
 	}
 	
 	public static class StreamSocket extends WebSocketController {
-
-		public static String authToken(String socket_id, String channel, String channel_data) {
-			
-			String string_to_sign = socket_id + ":" + channel;
-			
-			if (string_to_sign != null) {
-				string_to_sign = string_to_sign + ":" + channel_data;
-			}
-			
-			return PushPlayUtil.sha256(string_to_sign, PushPlayPlugin.secret);
-		}
 		
 		/**
 		* Subscribe
 		*/
 		public static void app(String apiKey) {
 		    
-			Logger.info("Got connection %s", apiKey);
+			Logger.info("Got connection api key=[%s]", apiKey);
 			Set<String> subscriptions = new HashSet<String>();
 			Message outgoing = new Message();
 			final String socket_id = UUID.randomUUID().toString();
 			
 			if (outbound.isOpen()) {
-				Logger.info("outbound open");
+				Logger.info("outbound open, socket id=[%s]", socket_id);
 				outgoing.setEvent("pusher:connection_established");
 				outgoing.setData(new HashMap<String, String>() {{ put("socket_id", socket_id); }});
 				
@@ -98,28 +88,42 @@ public class PushPlayWebSocket extends Controller {
 					Either<Http.WebSocketEvent, Message> e = await(Promise.waitEither(inbound.nextEvent(), PushPlayPlugin.stream.nextEvent()));
 					
 					for (String txt : Http.WebSocketEvent.TextFrame.match(e._1)) {
-						Message incoming = new Gson().fromJson(new JsonParser().parse(txt), Message.class);
-						Logger.info("Incoming Message %s", txt);
+						Logger.info("Incoming Message - %s", txt);
+						Message incoming = new Gson().fromJson(txt, Message.class);
+						
 						outgoing.clear();
-						outgoing.setChannel(incoming.getChannel());
+						String channel = incoming.getChannel();
+						if (channel == null) {
+							channel = incoming.getData().get("channel");
+						}
+						
+						if (channel == null) {
+							Logger.error("No channel provided in message %s", txt);
+							continue;
+						}
+						outgoing.setChannel(channel);
 						
 						if (incoming.getEvent().equals("pusher:subscribe")) {
-							Logger.info("Subscribing to %s", incoming.getChannel());
+							Logger.info("Subscribing to %s", channel);
 							String auth = incoming.getData().get("auth");
-							if (auth != null && !authToken(socket_id, incoming.getChannel(), incoming.getData().get("channel_data")).equals(auth.split(":")[1])) {
+							if (auth != null && !PushPlayUtil.authToken(socket_id, channel, incoming.getData().get("channel_data"))
+									.equals(auth.split(":")[1])) {
 								// private channel failure
 								outgoing.setEvent("pusher:error");
 							} else {
-								subscriptions.add(incoming.getChannel());
+								subscriptions.add(channel);
+								// TODO if this is presence channel, need to send a member add message - http://pusher.com/docs/client_api_guide/client_presence_events
 								outgoing.setEvent("pusher_internal:subscription_succeeded");
 							}
 						}
 						else if (incoming.getEvent().equals("pusher:unsubscribe")) {
-							subscriptions.remove(incoming.getChannel());
-							//outgoing.setEvent_name("unsubscribe_succeeded");
+							// TODO if this is presence channel, need to send a member remove message - http://pusher.com/docs/client_api_guide/client_presence_events
+							subscriptions.remove(channel);
 						}
 						else {
 							Logger.warn("Unrecognized event [%s]", incoming.getEvent());
+							// TODO handle client- events - http://pusher.com/docs/client_api_guide/client_events#trigger-events
+							outgoing = incoming;
 						}
 						
 						if (outgoing.getEvent() != null) {
@@ -128,13 +132,13 @@ public class PushPlayWebSocket extends Controller {
 					}
 					 
 					for (Message message : ClassOf(Message.class).match(e._2)) {
-						Logger.info("Publishing Event %s to Outbound Subscribers", 1);
 						// if the socket created the message, don't push it out
 						if (message.getSocket_id() != null && message.getSocket_id().equals(socket_id)) continue;
 						
 						// only send messages if we are subscribed to it.
 						if (message.getChannel() != null && subscriptions.contains(message.getChannel())) {
 							//outbound.send(message.toString());
+							Logger.info("Publishing message to subscribers %s", new Gson().toJson(message));
 							outbound.sendJson(message);
 						}
 					}
