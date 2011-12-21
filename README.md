@@ -32,8 +32,8 @@ application.
 
 ## TODO
 
-Finish up presence support
-Use a database for message passing and state, besides the obvious benefits this will also help with scaling.
+- Finish up presence support
+- Use a database for message passing and state, besides the obvious benefits this will also help with scaling.
 
 ## Notes
 
