@@ -34,6 +34,7 @@ application.
 
 - Finish up presence support
 - Use a database for message passing and state, besides the obvious benefits this will also help with scaling.
+- Clean up the code, lots can be refactored.
 
 ## Notes
 

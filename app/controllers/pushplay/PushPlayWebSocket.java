@@ -2,7 +2,11 @@ package controllers.pushplay;
 
 import static play.libs.F.Matcher.ClassOf;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 
 import play.Logger;
 import play.Play;
+import play.PlayPlugin;
 import play.libs.F.Either;
 import play.libs.F.Promise;
 import play.modules.pushplay.Message;
@@ -52,7 +57,7 @@ public class PushPlayWebSocket extends Controller {
 		// do the damn thing
 		// need to convert message, which is json key/value pairs to map
 		Map<String, String> map = new Gson().fromJson(message, new TypeToken<Map<String, String>>() {}.getType());
-		PushPlayPlugin.stream.publish(new Message(channel, tem.name, map, tem.socket_id));
+		PushPlayPlugin.publishMessage(new Message(channel, tem.name, map, tem.socket_id));
 		
 		response.status=Http.StatusCode.ACCEPTED;
 		renderText("");
@@ -64,7 +69,7 @@ public class PushPlayWebSocket extends Controller {
 		* Subscribe
 		*/
 		public static void app(String apiKey) {
-		    
+			
 			Logger.info("Got connection api key=[%s]", apiKey);
 			Set<String> subscriptions = new HashSet<String>();
 			Message outgoing = new Message();
@@ -127,7 +132,7 @@ public class PushPlayWebSocket extends Controller {
 						}
 						
 						if (outgoing.getEvent() != null) {
-							PushPlayPlugin.stream.publish(outgoing);
+							PushPlayPlugin.publishMessage(outgoing);
 						}
 					}
 					 
@@ -144,7 +149,7 @@ public class PushPlayWebSocket extends Controller {
 					}
 					
 				} catch (Throwable t) {
-					Logger.error("Caught error", t);
+					Logger.error("Caught errorr %s", t.getMessage());
 				}
 			}
 		}

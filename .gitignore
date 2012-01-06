@@ -14,3 +14,6 @@ deploy/*.jar
 .classpath
 /eclipse
 /dist
+lib
+/modules
+samples-and-tests/pushplay-app/modules

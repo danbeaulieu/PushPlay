@@ -3,6 +3,7 @@
 require:
     - play
     - pushplay 0.1
+    - play -> hazelcast 0.4
     
 repositories:
      - localRepo:

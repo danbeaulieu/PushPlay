@@ -2,3 +2,4 @@ self: play -> pushplay 0.1
 
 require:
     - play
+    - play -> hazelcast 0.4
