@@ -24,6 +24,22 @@ pusher.secret
 You'll also need to overwrite the pusher connection settings in the pusher javascript client library. Namely the Pusher host and ws_port settings. Check out the index.html view in the sample
 application.
 
+Since integrating with Hazelcast there a few more things to work out. Hazelcast is a clustering data distribution library. It's awesome. <a href="http://www.hazelcast.com">Read more at hazelcast.com</a>
+
+Any application that uses the PushPlay module will need to add the Play! hazelcast plugin to it's dependencies. 
+
+<pre>
+- play -> hazelcast 0.4
+</pre>
+
+and then update your dependencies. For example:
+
+<pre>
+play dependencies pushplay/samples-and-tests/pushplay-app/ --sync
+</pre>
+
+From there you can configure the hazelcast cluster as you normally would (See the docs). The hazelcast config is in {your-app}/conf/hazelcast-0.4/hazelcast.xml. You can also disable hazelcast altogether if you don't want to use it. See the hazelcast plugin documentation for more info.
+
 ## Alternatives
 
 <a href="https://github.com/stevegraham/slanger">Slanger</a> - An open source, robust, self contained Pusher protocol server from Stevie Graham.
@@ -33,7 +49,7 @@ application.
 ## TODO
 
 - Finish up presence support
-- Use a database for message passing and state, besides the obvious benefits this will also help with scaling.
+- Use a database for <devl>message passing</del> and state, besides the obvious benefits this will also help with scaling.
 - Clean up the code, lots can be refactored.
 
 ## Notes
