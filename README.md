@@ -51,6 +51,7 @@ From there you can configure the hazelcast cluster as you normally would (See th
 - Finish up presence support
 - Use a database for <devl>message passing</del> and state, besides the obvious benefits this will also help with scaling.
 - Clean up the code, lots can be refactored.
+- Add instructions on how to run the sample app
 
 ## Notes
 
