@@ -40,6 +40,19 @@ play dependencies pushplay/samples-and-tests/pushplay-app/ --sync
 
 From there you can configure the hazelcast cluster as you normally would (See the docs). The hazelcast config is in {your-app}/conf/hazelcast-0.4/hazelcast.xml. You can also disable hazelcast altogether if you don't want to use it. See the hazelcast plugin documentation for more info.
 
+## Run The Sample App
+
+Goes something like this:
+
+- $git clone git@github.com:danbeaulieu/PushPlay.git
+- $cd PushPlay
+- $mkdir modules
+- $play dependencies
+- $play build-module
+- $cd samples-and-tests/
+- $play dependencies pushplay-app/
+- $play run pushplay-app/ --%dev1
+
 ## Alternatives
 
 <a href="https://github.com/stevegraham/slanger">Slanger</a> - An open source, robust, self contained Pusher protocol server from Stevie Graham.
