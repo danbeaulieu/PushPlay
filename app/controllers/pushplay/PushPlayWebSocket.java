@@ -65,12 +65,14 @@ public class PushPlayWebSocket extends Controller {
 	
 	public static class StreamSocket extends WebSocketController {
 		
+        private static Map<String, Map<String, String>> presence = PushPlayPlugin.hazel.getMap("presence");
+
 		/**
 		* Subscribe
 		*/
 		public static void app(String apiKey) {
 			
-			Logger.info("Got connection api key=[%s]", apiKey);
+            Logger.info("Got connection api key=[%s]", apiKey);
 			Set<String> subscriptions = new HashSet<String>();
 			Message outgoing = new Message();
 			final String socket_id = UUID.randomUUID().toString();
@@ -113,22 +115,37 @@ public class PushPlayWebSocket extends Controller {
 							String auth = incoming.getData().get("auth");
 							if (auth != null && !PushPlayUtil.authToken(socket_id, channel, incoming.getData().get("channel_data"))
 									.equals(auth.split(":")[1])) {
-								// private channel failure
+								// private/presence channel failure
 								outgoing.setEvent("pusher:error");
 							} else {
+                                outgoing.setEvent("pusher_internal:subscription_succeeded");
 								subscriptions.add(channel);
-								// TODO if this is presence channel, need to send a member add message - http://pusher.com/docs/client_api_guide/client_presence_events
-								outgoing.setEvent("pusher_internal:subscription_succeeded");
+                                if (channel.startsWith("presence-")) {
+                                    Map<String, String> members;
+                                    if (!presence.containsKey(channel)) {
+                                        presence.put(channel, new HashMap<String, String>());
+                                    }
+                                    members = presence.get(channel);
+                                    outgoing.setData(members);
+                                    // TODO if this is presence channel, need to send a member add message - http://pusher.com/docs/client_api_guide/client_presence_events
+                                }
 							}
 						}
 						else if (incoming.getEvent().equals("pusher:unsubscribe")) {
 							// TODO if this is presence channel, need to send a member remove message - http://pusher.com/docs/client_api_guide/client_presence_events
 							subscriptions.remove(channel);
 						}
+                        else if (incoming.getEvent().startsWith("client-")) {
+                            // can only trigger events if this user is subscribed to the channel
+                            // channel must be presence or private
+                            if (subscriptions.contains(channel) && isAuthenticated(channel)) {
+                                // TODO handle client- events - http://pusher.com/docs/client_api_guide/client_events#trigger-events
+                                outgoing = incoming;
+                            }
+                        }
 						else {
 							Logger.warn("Unrecognized event [%s]", incoming.getEvent());
-							// TODO handle client- events - http://pusher.com/docs/client_api_guide/client_events#trigger-events
-							outgoing = incoming;
+
 						}
 						
 						if (outgoing.getEvent() != null) {
@@ -139,7 +156,7 @@ public class PushPlayWebSocket extends Controller {
 					for (Message message : ClassOf(Message.class).match(e._2)) {
 						// if the socket created the message, don't push it out
 						if (message.getSocket_id() != null && message.getSocket_id().equals(socket_id)) continue;
-						
+
 						// only send messages if we are subscribed to it.
 						if (message.getChannel() != null && subscriptions.contains(message.getChannel())) {
 							//outbound.send(message.toString());
@@ -147,11 +164,15 @@ public class PushPlayWebSocket extends Controller {
 							outbound.sendJson(message);
 						}
 					}
-					
 				} catch (Throwable t) {
-					Logger.error("Caught errorr %s", t.getMessage());
+					Logger.error("Caught error %s", t.getMessage());
 				}
 			}
+            // TODO Loop through subscriptions and notify presence channels that user left
 		}
-	}
+
+        private static boolean isAuthenticated(String channel) {
+            return channel.startsWith("private-") || channel.startsWith("presence-");
+        }
+    }
 }

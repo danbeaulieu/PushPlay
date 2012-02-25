@@ -21,7 +21,7 @@ public class PushPlayPlugin extends PlayPlugin {
 
 	public static EventStream<Message> stream = new EventStream<Message>();
 	
-	private static HazelcastInstance hazel;
+	public static HazelcastInstance hazel;
 	
 	static {
 		
@@ -62,8 +62,9 @@ public class PushPlayPlugin extends PlayPlugin {
 		// just in case there is a hazelcast problem this app server will still be able to handle 
 		// messages
 		PushPlayPlugin.stream.publish(msg);
-		
-		if (hazel != null) {
+
+        // don't publish to cluster internal messages
+		if (hazel != null && !msg.getEvent().startsWith("pusher_internal")) {
 			ITopic<String> topic = hazel.getTopic("pushplay");
 			Logger.debug("Publishing message: %s", msg);
 			TopicMessage topicMessage = new TopicMessage(Play.id, msg);

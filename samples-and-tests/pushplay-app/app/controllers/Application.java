@@ -4,14 +4,14 @@ import play.*;
 import play.modules.pushplay.PushPlayPlugin;
 import play.modules.pushplay.PushPlayUtil;
 import play.mvc.*;
+import play.server.Server;
 
 import java.util.*;
-
-import models.*;
 
 public class Application extends Controller {
 
     public static void index() {
+        renderArgs.put("playPort", Server.httpPort);
         render();
     }
     

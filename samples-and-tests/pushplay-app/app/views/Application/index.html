@@ -5,19 +5,19 @@
 <script>
 
 	Pusher.host = "localhost"; // change to your host
-	Pusher.ws_port = 9001; // change to the port Play! is started on
+	Pusher.ws_port = ${playPort}; // change to the port Play! is started on
 	
-	var thingChannel;
+	var chatChannel;
 	$(document).ready(function() {
 		var pusher = new Pusher('foo'); // Replace with your app key in application.conf
 		pusher.bind('pusher:subscription_succeeded', function(data) {
 		    updateContainer('subscribed!');
-		    thingChannel.trigger('client-talk', {'message': 'auto-message'});
+		    chatChannel.trigger('client-talk', {'message': 'auto-message'});
 		});
 		
-		thingChannel = pusher.subscribe('private-messages');
+		chatChannel = pusher.subscribe('private-messages');
 		
-		thingChannel.bind('client-talk', function(data) {
+		chatChannel.bind('client-talk', function(data) {
 		    updateContainer(data.message);
 		});
 	});
@@ -27,7 +27,7 @@
 	}
 	
 	function triggerFromInput() {
-	   thingChannel.trigger('client-talk', {'message': $('#message').val()});
+	   chatChannel.trigger('client-talk', {'message': $('#message').val()});
 	}
 
 </script>

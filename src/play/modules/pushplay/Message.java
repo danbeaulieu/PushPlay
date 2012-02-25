@@ -70,5 +70,6 @@ public class Message {
 		this.event = null;
 		this.data = null;	
 	}
+
 }
 
