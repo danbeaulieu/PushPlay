@@ -4,9 +4,9 @@ public class TopicMessage {
 
 	public String playServerId;
 	
-	public Message message;
+	public String message;
 	
-	public TopicMessage(String id, Message msg) {
+	public TopicMessage(String id, String msg) {
 		
 		this.playServerId = id;
 		this.message = msg;

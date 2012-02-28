@@ -19,7 +19,7 @@ import play.mvc.Http.Inbound;
 
 public class PushPlayPlugin extends PlayPlugin {
 
-	public static EventStream<Message> stream = new EventStream<Message>();
+	public static Map<String, EventStream<String>> streams = new HashMap<String, EventStream<String>>();
 	
 	public static HazelcastInstance hazel;
 	
@@ -45,7 +45,7 @@ public class PushPlayPlugin extends PlayPlugin {
 				public void onMessage(String msg) {
 					TopicMessage incoming = new Gson().fromJson(msg, TopicMessage.class);
 					if (!incoming.playServerId.equals(Play.id)) {
-						stream.publish(incoming.message);
+						publishToAllEventStreams(incoming.message);
 						Logger.debug("Message received via Hazelcast Topic - %s", msg);
 					}
 				}
@@ -55,16 +55,29 @@ public class PushPlayPlugin extends PlayPlugin {
 			Logger.warn("hazel instance is not available, are you sure it isn't disabled in the conf?");
 		}
 	}
-	
+	private static void publishToAllEventStreams(Message msg) {
+        publishToAllEventStreams(new Gson().toJson(msg));
+    }
+
+    private static void publishToAllEventStreams(String msg) {
+        for (EventStream<String> es: streams.values()) {
+            es.publish(msg);
+        }
+    }
+
 	public static void publishMessage(Message msg) {
+        publishMessage(new Gson().toJson(msg));
+    }
+
+    public static void publishMessage(String msg) {
 		
 		// we publish locally first even though we'll get it back when we publish to the topic
 		// just in case there is a hazelcast problem this app server will still be able to handle 
 		// messages
-		PushPlayPlugin.stream.publish(msg);
+        publishToAllEventStreams(msg);
 
         // don't publish to cluster internal messages
-		if (hazel != null && !msg.getEvent().startsWith("pusher_internal")) {
+		if (hazel != null && !msg.contains("pusher_internal:subscription_succeeded")) {
 			ITopic<String> topic = hazel.getTopic("pushplay");
 			Logger.debug("Publishing message: %s", msg);
 			TopicMessage topicMessage = new TopicMessage(Play.id, msg);

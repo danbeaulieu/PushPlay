@@ -1,0 +1,51 @@
+#{extends 'main.html' /}
+
+#{set title:'Home' /}
+
+<script>
+
+    Pusher.host = "localhost"; // change to your host
+    Pusher.ws_port = ${playPort}; // change to the port Play! is started on
+
+    Pusher.log = function(message) {
+        if (window.console && window.console.log) window.console.log(message);
+    };
+
+    var chatChannel;
+    $(document).ready(function() {
+        var pusher = new Pusher('foo'); // Replace with your app key in application.conf
+        pusher.bind('pusher:subscription_succeeded', function(data) {
+            updateContainer('subscribed!');
+            chatChannel.trigger('client-talk', {'message': 'auto-message'});
+        });
+
+        chatChannel = pusher.subscribe('presence-messages');
+
+        chatChannel.bind('pusher:subscription_succeeded', function(members) {
+            // for example
+            alert(members.count);
+
+            members.each(function(member) {
+                // for example:
+                alert(member.id + " " + member.info.name);
+            });
+        });
+        chatChannel.bind('client-talk', function(data) {
+            updateContainer(data.message);
+        });
+    });
+
+    function updateContainer(msg) {
+        $('#container').append('<div class="update">' + msg + '</div>');
+    }
+
+    function triggerFromInput() {
+        chatChannel.trigger('client-talk', {'message': $('#message').val()});
+    }
+
+</script>
+
+<h2>PushPlay!</h2>
+</br>
+<input type='text' id='message'></input> <input type="submit" onclick='javascript:triggerFromInput();' value="Send Message">
+<div id="container"></div>

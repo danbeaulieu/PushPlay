@@ -1,7 +1,7 @@
 # Application dependencies
 
 require:
-    - play
+    - play -> play master-da9bb15
     - pushplay 0.1
     - play -> hazelcast 0.4
     

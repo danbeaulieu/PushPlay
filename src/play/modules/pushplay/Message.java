@@ -3,25 +3,25 @@ package play.modules.pushplay;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
 
 public class Message {
 	
 	String channel;
 		
 	String event;
-	
-	Map<String, String> data;
-
-	String socket_id;
+	// This needs to be something other than Map. Maybe JsonObject?
+	//JsonObject data;
+    //@SerializedName("data")
+    Payload data;
 	
 	public Message() { }
 	
-	public Message(String channel, String event, Map<String, String> data, String socket_id) {
+	public Message(String channel, String event, Payload data) {
 		
 		this.channel = channel;
 		this.event = event;
 		this.data = data;
-		this.socket_id = socket_id;
 	}
 
 	public String getChannel() {
@@ -44,24 +44,15 @@ public class Message {
 		this.event = event;
 	}
 
-	public Map<String, String> getData() {
+	public Payload getData() {
 		
 		return data;
 	}
 
-	public void setData(Map<String, String> data) {
+	public void setData(Payload data) {
 		
 		this.data = data;
-	}
 
-	public String getSocket_id() {
-		
-		return socket_id;
-	}
-
-	public void setSocket_id(String socket_id) {
-		
-		this.socket_id = socket_id;
 	}
 
 	public void clear() {
@@ -70,6 +61,15 @@ public class Message {
 		this.event = null;
 		this.data = null;	
 	}
+    
+    public String toJSON() {
+        JsonObject json = new JsonObject();
+        json.addProperty("event", this.getEvent());
+        json.addProperty("channel", this.getChannel());
+        //json.add("data", this.getData());
+
+        return json.toString();
+    }
 
 }
 
